@@ -1,77 +1,67 @@
-import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import crypto from "crypto";
-import { prisma } from "@/lib/prisma";
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const body = await req.json().catch(() => null);
+    const body = await request.json();
+    const { fullName, email, password, telegram, service, capitalPlan } = body;
 
-    if (!body) {
+    if (!fullName || !email) {
       return NextResponse.json(
-        { error: "Invalid request body" },
+        { success: false, error: 'Full name and email are required.' },
         { status: 400 }
       );
     }
 
-    const email = body.email?.trim().toLowerCase();
-    const password = body.password;
-    const fullName = body.fullName || body.name;
-    const service = body.service || "STANDARD";
-    const telegram = body.telegram || null;
+    const cleanEmail = email.toLowerCase().trim();
 
-    if (!email || !password || !fullName) {
-      return NextResponse.json(
-        { error: "Full name, email, and password are required" },
-        { status: 400 }
-      );
-    }
-
+    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { email: cleanEmail },
     });
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "A user with this email address already exists" },
-        { status: 409 }
+        { success: false, error: 'An account with this email already exists.' },
+        { status: 400 }
       );
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const userCode = `LF-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
+    // Auto-generate unique user code
+    const userCode = `FX-${Math.floor(10000 + Math.random() * 90000)}`;
 
+    // Create user in DB
     const user = await prisma.user.create({
       data: {
-        email,
-        fullName,
-        password: hashedPassword,
         userCode,
-        service,
-        telegram,
-      },
-      select: {
-        id: true,
-        email: true,
-        fullName: true,
-        userCode: true,
-        service: true,
-        telegram: true,
-        createdAt: true,
+        fullName,
+        email: cleanEmail,
+        password: password || '',
+        telegram: telegram || null,
+        service: service || capitalPlan || 'Standard',
+        balance: 0,
       },
     });
 
-    return NextResponse.json(
-      { success: true, message: "User registered successfully", user },
-      { status: 201 }
-    );
+    return NextResponse.json({
+      success: true,
+      userId: user.id,
+      userCode: user.userCode,
+      user: {
+        id: user.id,
+        userCode: user.userCode,
+        fullName: user.fullName,
+        email: user.email,
+        service: user.service,
+        balance: user.balance,
+      },
+    });
   } catch (error: any) {
-    console.error("[AUTH_REGISTER_ERROR]:", error);
-
+    console.error('[REGISTER_API_ERROR]:', error);
     return NextResponse.json(
       {
-        error: "Internal server error",
-        details: error?.message || "Unknown error",
+        success: false,
+        error: error?.message || 'Database error while registering account.',
       },
       { status: 500 }
     );
