@@ -7,31 +7,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum DepositStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String    @id @default(cuid())
+  userCode  String    @unique
   fullName  String
-  password  String
-  userCode  String   @unique @default(cuid())
-  service   String   @default("STANDARD")
+  email     String    @unique
+  password  String    @default("")
   telegram  String?
-
+  service   String
+  balance   Float     @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deposits  Deposit[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("users")
 }
 
 model Deposit {
-  id        String   @id @default(cuid())
+  id        String        @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  amount    Float
-  status    String   @default("PENDING")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("deposits")
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Float         @default(0)
+  amountUsd Float?
+  coin      String?
+  network   String?
+  reference String?
+  status    DepositStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 }

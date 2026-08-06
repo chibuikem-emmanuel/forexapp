@@ -126,3 +126,28 @@ export const FAQS = [
     answer: 'Yes, your initial principal deposit is unlocked and returned upon completion of the plan duration.',
   },
 ];
+
+
+export const testimonials = [
+  {
+    name: "Alex M.",
+    role: "FX Day Trader",
+    content: "Link Forex has completely streamlined my execution and account management.",
+    rating: 5,
+    location: "London, UK"
+  },
+  {
+    name: "Marcus V.",
+    role: "Portfolio Manager",
+    content: "The automated pool tracking and instant deposit routing give our firm total control.",
+    rating: 5,
+    location: "Frankfurt, DE"
+  },
+  {
+    name: "Elena R.",
+    role: "Retail Investor",
+    content: "Intuitive portal interface backed by super responsive support. Outstanding platform.",
+    rating: 5,
+    location: "Madrid, ES"
+  }
+];

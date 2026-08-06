@@ -2,80 +2,90 @@
 
 import { prisma } from '@/lib/prisma';
 import { DepositStatus } from '@prisma/client';
-import { revalidatePath } from 'next/cache';
 
-// Helper to generate unique user code
-function generateUserCode(): string {
-  return 'USR-' + Math.floor(100000 + Math.random() * 900000);
-}
-
-// Helper to generate deposit reference
-function generateDepositRef(): string {
-  return 'DEP-' + Math.floor(100000 + Math.random() * 900000);
-}
-
-export async function registerUser(data: {
+export interface RegisterUserInput {
   fullName: string;
   email: string;
   telegram?: string;
-  country?: string;
   service: string;
+  country?: string;
   capitalPlan?: string;
+  userCode?: string;
   password?: string;
-}) {
-  // Ensure password is provided since the Prisma schema requires it
-  if (!data.password || data.password.trim() === '') {
-    return { success: false, error: 'Password is required to create an account.' };
-  }
+}
 
-  const userCode = generateUserCode();
-
+export async function registerUser(input: RegisterUserInput | FormData) {
   try {
+    let fullName: string;
+    let email: string;
+    let telegram: string | undefined;
+    let service: string;
+    let userCode: string;
+    let password = '';
+
+    if (input instanceof FormData) {
+      fullName = input.get('fullName') as string;
+      email = input.get('email') as string;
+      telegram = (input.get('telegram') as string) || undefined;
+      service = (input.get('service') as string) || (input.get('capitalPlan') as string) || 'Standard';
+      userCode = (input.get('userCode') as string) || `FX-${Math.floor(10000 + Math.random() * 90000)}`;
+    } else {
+      fullName = input.fullName;
+      email = input.email;
+      telegram = input.telegram;
+      service = input.service || input.capitalPlan || 'Standard';
+      userCode = input.userCode || `FX-${Math.floor(10000 + Math.random() * 90000)}`;
+      password = input.password || '';
+    }
+
     const user = await prisma.user.create({
       data: {
         userCode,
-        fullName: data.fullName,
-        email: data.email,
-        telegram: data.telegram || null,
-        service: data.service,
-        password: data.password, // Added required password field
+        fullName,
+        email,
+        telegram: telegram || null,
+        service,
+        password,
       },
     });
 
-    return { success: true, userId: user.id };
-  } catch (error) {
-    console.error('Error creating user:', error);
-    return { success: false, error: 'Failed to create user account.' };
+    return {
+      success: true,
+      userId: user.id,
+      userCode: user.userCode,
+      user,
+    };
+  } catch (err: any) {
+    return {
+      success: false,
+      userId: null,
+      error: err?.message || 'Failed to register user account.',
+    };
   }
 }
 
-export async function createDeposit(data: {
+export async function submitDeposit({
+  userId,
+  amountUsd,
+  coin,
+  network,
+  reference,
+}: {
   userId: string;
   amountUsd: number;
   coin: string;
   network: string;
+  reference: string;
 }) {
-  const deposit = await prisma.deposit.create({
+  return await prisma.deposit.create({
     data: {
-      reference: generateDepositRef(),
-      userId: data.userId,
-      amountUsd: data.amountUsd,
-      coin: data.coin,
-      network: data.network,
+      userId,
+      amount: amountUsd,
+      amountUsd,
+      coin,
+      network,
+      reference,
       status: DepositStatus.PENDING,
     },
   });
-
-  revalidatePath('/admin');
-  return { success: true, depositId: deposit.id };
-}
-
-export async function updateDepositStatus(depositId: string, status: DepositStatus) {
-  await prisma.deposit.update({
-    where: { id: depositId },
-    data: { status },
-  });
-
-  revalidatePath('/admin');
-  return { success: true };
 }
