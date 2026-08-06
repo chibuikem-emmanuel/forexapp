@@ -25,6 +25,8 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deposits  Deposit[]
+
+  @@map("users") // <-- Preserves your existing table and data!
 }
 
 model Deposit {
@@ -39,4 +41,6 @@ model Deposit {
   status    DepositStatus @default(PENDING)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+
+  @@map("deposits")
 }
