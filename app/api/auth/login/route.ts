@@ -13,8 +13,17 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!password || typeof password !== 'string') {
+      return NextResponse.json(
+        { success: false, error: 'Password is required.' },
+        { status: 400 }
+      );
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+
     const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
+      where: { email: cleanEmail },
     });
 
     if (!user) {
@@ -24,7 +33,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Compare stored password if set
+    // Verify password if string exists on account
     if (user.password && user.password !== password) {
       return NextResponse.json(
         { success: false, error: 'Invalid email or password.' },
@@ -44,11 +53,11 @@ export async function POST(request: Request) {
       },
     });
   } catch (error: any) {
-    console.error('[LOGIN_API_ERROR]:', error);
+    console.error('[LOGIN_ROUTE_ERROR]:', error);
     return NextResponse.json(
       {
         success: false,
-        error: error?.message || 'Database connection error during login.',
+        error: error?.message || 'Server error while attempting authentication.',
       },
       { status: 500 }
     );
