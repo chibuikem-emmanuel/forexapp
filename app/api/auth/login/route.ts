@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma'; // Adjust import path to match your prisma instance
+import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
 
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. Set auth session/cookie (Matching your register token pattern)
+    // 3. Set auth session/cookie
     const cookieStore = await cookies();
     cookieStore.set('token', user.id, {
       httpOnly: true,
@@ -55,7 +55,9 @@ export async function POST(request: Request) {
         user: {
           id: user.id,
           email: user.email,
-          name: user.name,
+          fullName: user.fullName,
+          userCode: user.userCode,
+          balance: user.balance,
         },
       },
       { status: 200 }
