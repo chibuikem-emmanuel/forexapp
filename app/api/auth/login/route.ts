@@ -1,56 +1,55 @@
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
-import { SignJWT } from 'jose';
 import { prisma } from '@/lib/prisma';
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'fallback-secret-change-me'
-);
-
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const { email, password } = await req.json();
+    const body = await request.json();
+    const { email, password } = body;
 
-    if (!email || !password) {
+    if (!email || typeof email !== 'string') {
       return NextResponse.json(
-        { error: 'Email and password are required' },
+        { success: false, error: 'Valid email address is required.' },
         { status: 400 }
       );
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: email.trim().toLowerCase() },
+      where: { email: email.toLowerCase().trim() },
     });
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user) {
       return NextResponse.json(
-        { error: 'Invalid email or password' },
+        { success: false, error: 'Invalid email or password.' },
         { status: 401 }
       );
     }
 
-    const token = await new SignJWT({ userId: user.id, email: user.email })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setExpirationTime('7d')
-      .sign(JWT_SECRET);
+    // Compare stored password if set
+    if (user.password && user.password !== password) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid email or password.' },
+        { status: 401 }
+      );
+    }
 
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
-      user: { id: user.id, email: user.email, fullName: user.fullName },
+      user: {
+        id: user.id,
+        userCode: user.userCode,
+        fullName: user.fullName,
+        email: user.email,
+        service: user.service,
+        balance: user.balance,
+      },
     });
-
-    response.cookies.set('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-    });
-
-    return response;
-  } catch (error) {
+  } catch (error: any) {
+    console.error('[LOGIN_API_ERROR]:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        success: false,
+        error: error?.message || 'Database connection error during login.',
+      },
       { status: 500 }
     );
   }
