@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/prisma'; // Adjust import path to match your prisma instance
+import bcrypt from 'bcryptjs';
+import { cookies } from 'next/headers';
 
 export async function POST(request: Request) {
   try {
@@ -8,36 +10,36 @@ export async function POST(request: Request) {
 
     if (!email || !password) {
       return NextResponse.json(
-        { success: false, error: 'Email and password are required.' },
+        { message: 'Email and password are required' },
         { status: 400 }
       );
     }
 
-    const cleanEmail = email.toLowerCase().trim();
-    const user = await prisma.user.findUnique({ where: { email: cleanEmail } });
+    // 1. Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
 
-    if (!user || (user.password && user.password !== password)) {
+    if (!user) {
       return NextResponse.json(
-        { success: false, error: 'Invalid email or password.' },
+        { message: 'Invalid credentials' },
         { status: 401 }
       );
     }
 
-    // 1. Prepare response
-    const response = NextResponse.json({
-      success: true,
-      user: {
-        id: user.id,
-        userCode: user.userCode,
-        fullName: user.fullName,
-        email: user.email,
-        service: user.service,
-        balance: user.balance,
-      },
-    });
+    // 2. Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    // 2. Set auth cookie so Next.js Middleware recognizes the session
-    response.cookies.set('investflow_session', user.id, {
+    if (!isPasswordValid) {
+      return NextResponse.json(
+        { message: 'Invalid credentials' },
+        { status: 401 }
+      );
+    }
+
+    // 3. Set auth session/cookie (Matching your register token pattern)
+    const cookieStore = await cookies();
+    cookieStore.set('token', user.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -45,11 +47,23 @@ export async function POST(request: Request) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
 
-    return response;
-  } catch (error: any) {
-    console.error('[LOGIN_ERROR]:', error);
     return NextResponse.json(
-      { success: false, error: 'Authentication failed.' },
+      {
+        success: true,
+        message: 'Login successful',
+        redirectTo: '/dashboard',
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        },
+      },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error('Login error:', error);
+    return NextResponse.json(
+      { message: 'Internal server error' },
       { status: 500 }
     );
   }
