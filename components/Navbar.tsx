@@ -19,10 +19,10 @@ export default function Navbar() {
           <div className="w-8 h-8 bg-gradient-to-tr from-[#00A3FF] to-[#00E0FF] [clip-path:polygon(25%_0%,75%_0%,100%_50%,75%_100%,25%_100%,0%_50%)] flex items-center justify-center shadow-[0_0_15px_rgba(0,163,255,0.5)] group-hover:scale-105 transition-transform" />
           <div className="flex flex-col">
             <span className="text-sm font-black tracking-widest text-white leading-tight">
-              LINK FOREX
+              AUTOMATED TRADING
             </span>
             <span className="text-[9px] tracking-[0.2em] font-medium text-slate-400 uppercase">
-              Trading Company
+              Merchant Platform
             </span>
           </div>
         </Link>
@@ -31,7 +31,7 @@ export default function Navbar() {
         <div className="hidden lg:flex items-center gap-2 px-5 py-1.5 rounded-full border border-[#00A3FF]/40 bg-[#00A3FF]/5 shadow-[0_0_15px_rgba(0,163,255,0.1)]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#00A3FF] animate-pulse" />
           <span className="text-[11px] font-mono tracking-[0.2em] text-[#00A3FF] uppercase font-semibold">
-            REGULATED · TRANSPARENT · DISCIPLINED
+            AUTOMATED · SECURE · DISCIPLINED
           </span>
         </div>
 
@@ -68,7 +68,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#00A3FF]/30 bg-[#00A3FF]/10 mb-2 w-fit">
             <span className="w-1.5 h-1.5 rounded-full bg-[#00A3FF] animate-pulse" />
             <span className="text-[10px] font-mono tracking-wider text-[#00A3FF] uppercase font-bold">
-              REGULATED TRADING DESK
+              AUTOMATED MERCHANT DESK
             </span>
           </div>
 
