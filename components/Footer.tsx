@@ -15,21 +15,21 @@ export default function Footer() {
           <div className="md:col-span-5 space-y-6">
             <div className="space-y-1">
               <h3 className="text-base font-black tracking-widest text-white uppercase leading-tight">
-                LINK FOREX
+                AUTOMATED TRADING
               </h3>
               <p className="text-[10px] tracking-[0.2em] font-semibold text-slate-500 uppercase">
-                TRADING COMPANY
+                MERCHANT PLATFORM
               </p>
             </div>
 
             <p className="text-slate-400 text-xs leading-relaxed max-w-sm">
-              A modern trading and investment firm delivering disciplined, data-driven solutions across forex, cryptocurrency, and global equity markets.
+              A modern algorithmic merchant platform delivering disciplined, data-driven automated solutions across forex, cryptocurrency, and global equity markets.
             </p>
 
             {/* Social Icons */}
             <div className="flex items-center gap-3 pt-2">
               <a
-                href="mailto:support@linkforex.com"
+                href="mailto:support@automatedtradingmerchant.com"
                 aria-label="Email Us"
                 className="w-10 h-10 rounded-xl bg-[#091833] border border-slate-700/80 flex items-center justify-center text-slate-300 hover:text-[#00A3FF] hover:border-[#00A3FF]/50 hover:bg-[#00A3FF]/10 transition-all"
               >
@@ -63,7 +63,7 @@ export default function Footer() {
             </h4>
 
             <div className="text-xs text-slate-300 space-y-1 font-medium leading-relaxed">
-              <p className="font-bold text-white text-sm pb-1">Link Forex Trading Company</p>
+              <p className="font-bold text-white text-sm pb-1">Automated Trading Merchant Ltd</p>
               <p className="uppercase">94 TORBAY ROAD</p>
               <p className="uppercase">HARROW</p>
               <p className="uppercase">MIDDLESEX HA2 9QJ</p>
@@ -94,7 +94,7 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-medium">
-          <p>© 2026 Link Forex. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Automated Trading Merchant. All rights reserved.</p>
 
           <div className="flex items-center gap-4 text-slate-400">
             <Link href="/register" className="hover:text-white transition-colors">

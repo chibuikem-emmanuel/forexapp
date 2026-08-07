@@ -113,10 +113,10 @@ export default function DashboardPage() {
             <div className="w-8 h-8 bg-gradient-to-tr from-[#00A3FF] to-[#00E0FF] [clip-path:polygon(25%_0%,75%_0%,100%_50%,75%_100%,25%_100%,0%_50%)]" />
             <div className="flex flex-col">
               <span className="text-sm font-black tracking-widest text-white leading-tight uppercase">
-                LINK FOREX
+                AUTOMATED TRADING
               </span>
               <span className="text-[9px] tracking-[0.2em] font-bold text-[#00A3FF] uppercase">
-                QUANTUM PORTAL
+                MERCHANT
               </span>
             </div>
           </Link>
