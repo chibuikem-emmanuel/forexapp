@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-import { cookies } from 'next/headers';
 import { SignJWT } from 'jose';
 
 const JWT_SECRET = new TextEncoder().encode(
@@ -42,7 +41,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. Generate signed JWT token
+    // 3. Generate signed JWT
     const token = await new SignJWT({
       id: user.id,
       email: user.email,
@@ -52,17 +51,8 @@ export async function POST(request: Request) {
       .setExpirationTime('7d')
       .sign(JWT_SECRET);
 
-    // 4. Set auth session/cookie
-    const cookieStore = await cookies();
-    cookieStore.set('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-    });
-
-    return NextResponse.json(
+    // 4. Create response and explicitly set cookie on the response object
+    const response = NextResponse.json(
       {
         success: true,
         message: 'Login successful',
@@ -77,6 +67,16 @@ export async function POST(request: Request) {
       },
       { status: 200 }
     );
+
+    response.cookies.set('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
+
+    return response;
   } catch (error: any) {
     console.error('Login error:', error);
     return NextResponse.json(
