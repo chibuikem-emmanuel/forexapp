@@ -2,6 +2,11 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
+import { SignJWT } from 'jose';
+
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'fallback-secret-change-me'
+);
 
 export async function POST(request: Request) {
   try {
@@ -37,9 +42,19 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. Set auth session/cookie
+    // 3. Generate signed JWT token
+    const token = await new SignJWT({
+      id: user.id,
+      email: user.email,
+    })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('7d')
+      .sign(JWT_SECRET);
+
+    // 4. Set auth session/cookie
     const cookieStore = await cookies();
-    cookieStore.set('token', user.id, {
+    cookieStore.set('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

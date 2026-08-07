@@ -1,11 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -38,17 +36,10 @@ export default function LoginPage() {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Exact redirect logic post-success
-      if (data.redirectTo) {
-        router.push(data.redirectTo);
-        router.refresh();
-      } else {
-        router.push('/dashboard');
-        router.refresh();
-      }
+      // Hard redirect forces browser to send newly set cookie to Next.js middleware
+      window.location.href = data.redirectTo || '/dashboard';
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred');
-    } finally {
       setLoading(false);
     }
   };
