@@ -32,7 +32,7 @@ export default function UserDashboardPage() {
     }
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/user/me/', {
+      const res = await fetch('https://cryp-backend.onrender.com/user/me/', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ export default function UserDashboardPage() {
     const token = localStorage.getItem('access_token');
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/user/deposit/', {
+      const res = await fetch('https://cryp-backend.onrender.com/api/user/deposit/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
