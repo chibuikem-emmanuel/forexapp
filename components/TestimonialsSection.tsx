@@ -6,7 +6,7 @@ export default function TestimonialsSection() {
   const testimonials = [
     {
       quote:
-        'Link Forex\'s pool trading program returned results I couldn\'t have imagined with a traditional fund. Transparent, professional, and truly impressive execution.',
+        'Automated Trading Merchant\'s pool trading program returned results I couldn\'t have imagined with a traditional fund. Transparent, professional, and truly impressive execution.',
       name: 'Lydia M.',
       country: 'United Kingdom',
       initials: 'LD',
@@ -20,7 +20,7 @@ export default function TestimonialsSection() {
     },
     {
       quote:
-        'What sets Link Forex apart is clarity. Every step of my investment was communicated clearly. I finally feel like I understand where my money is going.',
+        'What sets Automated Trading Merchant apart is clarity. Every step of my investment was communicated clearly. I finally feel like I understand where my money is going.',
       name: 'James K.',
       country: 'United States',
       initials: 'JK',
