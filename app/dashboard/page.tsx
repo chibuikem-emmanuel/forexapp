@@ -32,7 +32,7 @@ export default function UserDashboardPage() {
     }
 
     try {
-      const res = await fetch('https://cryp-backend.onrender.com/user/me/', {
+      const res = await fetch('https://cryp-backend.onrender.com/api/user/me/', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
