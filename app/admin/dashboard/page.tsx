@@ -69,7 +69,7 @@ export default function AdminDashboard() {
 
   async function loadAdminData() {
     try {
-      const authRes = await fetch('http://127.0.0.1:8000/api/user/me/', { headers: getHeaders() });
+      const authRes = await fetch('https://cryp-backend.onrender.com/api/user/me/', { headers: getHeaders() });
       if (!authRes.ok) throw new Error('Unauthorized');
       const authData = await authRes.json();
       
@@ -80,9 +80,9 @@ export default function AdminDashboard() {
       setCurrentUserEmail(authData.email);
 
       const [statsRes, depositsRes, usersRes] = await Promise.all([
-        fetch('http://127.0.0.1:8000/api/admin/overview/', { headers: getHeaders() }),
-        fetch('http://127.0.0.1:8000/api/admin/deposits/', { headers: getHeaders() }),
-        fetch('http://127.0.0.1:8000/api/admin/users/', { headers: getHeaders() })
+        fetch('https://cryp-backend.onrender.com/api/admin/overview/', { headers: getHeaders() }),
+        fetch('https://cryp-backend.onrender.com/api/admin/deposits/', { headers: getHeaders() }),
+        fetch('https://cryp-backend.onrender.com/api/admin/users/', { headers: getHeaders() })
       ]);
 
       if (statsRes.ok) setStats(await statsRes.json());
@@ -101,7 +101,7 @@ export default function AdminDashboard() {
 
   async function handleDepositAction(id: number, action: 'APPROVE' | 'REJECT') {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/admin/deposits/${id}/action/`, {
+      const res = await fetch(`https://cryp-backend.onrender.com/api/admin/deposits/${id}/action/`, {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify({ action })
@@ -120,7 +120,7 @@ export default function AdminDashboard() {
     setUpdatingUser(true);
 
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/admin/users/${selectedUser.id}/`, {
+      const res = await fetch(`https://cryp-backend.onrender.com/api/admin/users/${selectedUser.id}/`, {
         method: 'PATCH',
         headers: getHeaders(),
         body: JSON.stringify({
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
     setDeleteUserError(null);
 
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/admin/users/${userToDelete.id}/`, {
+      const res = await fetch(`https://cryp-backend.onrender.com/api/admin/users/${userToDelete.id}/`, {
         method: 'DELETE',
         headers: getHeaders(),
       });
@@ -177,7 +177,7 @@ export default function AdminDashboard() {
     setDeleteDepositError(null);
 
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/admin/deposits/${depositToDelete.id}/`, {
+      const res = await fetch(`https://cryp-backend.onrender.com/api/admin/deposits/${depositToDelete.id}/`, {
         method: 'DELETE',
         headers: getHeaders(),
       });
