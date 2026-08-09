@@ -1,341 +1,311 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  TrendingUp,
-  Crown,
-  Users,
-  Copy,
-  Check,
-  LogOut,
-  Clock,
-  ShieldAlert,
-  Calendar,
-  Layers,
-  ArrowDownLeft,
-  ArrowUpRight,
-  MessageSquare,
-  Activity,
-  Loader2,
-} from 'lucide-react';
 
-interface UserData {
-  name: string;
-  email: string;
-  accountId: string;
-  status: string;
-  service: string;
-  createdAt: string;
-}
+// System deposit wallet addresses mapped to each coin
+const WALLET_ADDRESSES: Record<string, string> = {
+  BTC: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+  ETH: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
+  USDT: 'TYD2pE4B56gN7f8A1b2c3d4e5f6g7h8i9j',
+  SOL: '7v9W8mP4zK2qL1rS5tU8vW3xY6zA9bC2dE5fG8hJ1kM',
+};
 
-export default function DashboardPage() {
+export default function UserDashboardPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'pool' | 'vip' | 'management'>('vip');
-  const [copied, setCopied] = useState(false);
-  const [currentTime, setCurrentTime] = useState<string>('');
-  const [user, setUser] = useState<UserData | null>(null);
+  const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  
+  // Deposit Form State
+  const [coin, setCoin] = useState('BTC');
+  const [amount, setAmount] = useState('');
+  const [submittingDeposit, setSubmittingDeposit] = useState(false);
+  const [depositMsg, setDepositMsg] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  async function fetchDashboard() {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/user/me/', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!res.ok) throw new Error('Failed to load user profile');
+      const data = await res.json();
+      setUserData(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const res = await fetch('/api/user/me');
-        if (!res.ok) {
-          router.push('/login');
-          return;
-        }
-        const data = await res.json();
-        setUser(data);
-      } catch (err) {
-        router.push('/login');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, [router]);
-
-  useEffect(() => {
-    const updateClock = () => {
-      const now = new Date();
-      setCurrentTime(now.toTimeString().split(' ')[0]);
-    };
-    updateClock();
-    const timer = setInterval(updateClock, 1000);
-    return () => clearInterval(timer);
+    fetchDashboard();
   }, []);
 
-  const handleCopyId = () => {
-    if (user?.accountId) {
-      navigator.clipboard.writeText(user.accountId);
+  const handleCopyAddress = () => {
+    const address = WALLET_ADDRESSES[coin] || '';
+    if (address) {
+      navigator.clipboard.writeText(address);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
   };
 
-  const handleSignOut = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/login');
-  };
+  async function handleDepositSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmittingDeposit(true);
+    setDepositMsg('');
 
-  const getInitials = (name: string) => {
-    return name
-      ? name
-          .split(' ')
-          .map((n) => n[0])
-          .join('')
-          .toUpperCase()
-          .slice(0, 2)
-      : 'LF';
-  };
+    const token = localStorage.getItem('access_token');
+
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/user/deposit/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ coin, amount: parseFloat(amount) }),
+      });
+
+      if (res.ok) {
+        setDepositMsg('Deposit request submitted! Awaiting admin approval.');
+        setAmount('');
+        fetchDashboard();
+      } else {
+        const data = await res.json();
+        setDepositMsg(data.error || 'Failed to initiate deposit.');
+      }
+    } catch (err) {
+      setDepositMsg('Network error submitting deposit.');
+    } finally {
+      setSubmittingDeposit(false);
+    }
+  }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#030712] flex items-center justify-center text-white">
-        <Loader2 className="w-8 h-8 animate-spin text-[#00A3FF]" />
+      <div className="min-h-screen bg-black text-white flex items-center justify-center font-mono text-sm">
+        Loading Account Dashboard...
       </div>
     );
   }
 
+  if (error || !userData) {
+    return (
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center space-y-4">
+        <p className="text-red-400 font-semibold">{error || 'Session expired'}</p>
+        <button 
+          onClick={() => router.push('/login')} 
+          className="bg-zinc-800 text-white px-4 py-2 rounded-xl text-sm"
+        >
+          Return to Login
+        </button>
+      </div>
+    );
+  }
+
+  const isAdmin = userData.is_staff || userData.role?.toUpperCase() === 'ADMIN';
+
   return (
-    <div className="min-h-screen bg-[#030712] text-white font-sans flex flex-col relative overflow-x-hidden">
-      
-      <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[#00A3FF]/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 left-10 w-[400px] h-[400px] bg-[#00E0FF]/5 rounded-full blur-[120px] pointer-events-none" />
-
-      <header className="bg-[#070F21]/80 backdrop-blur-xl border-b border-slate-800/80 sticky top-0 z-50">
-        <div className="max-w-[1500px] mx-auto px-6 py-4 flex items-center justify-between">
+    <div className="min-h-screen bg-black text-white p-6 lg:p-10">
+      <div className="max-w-6xl mx-auto space-y-8">
+        
+        {/* Header Profile Info */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-zinc-900 border border-zinc-800 p-6 rounded-2xl">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-white">{userData.full_name}</h1>
+              <span className={`text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full border ${
+                userData.status === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                userData.status === 'PENDING' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                'bg-red-500/10 text-red-400 border-red-500/20'
+              }`}>
+                {userData.status}
+              </span>
+            </div>
+            <p className="text-xs text-zinc-400 mt-1">{userData.email} • {userData.telegram_username ? `@${userData.telegram_username}` : 'No Telegram'}</p>
+          </div>
           
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-tr from-[#00A3FF] to-[#00E0FF] [clip-path:polygon(25%_0%,75%_0%,100%_50%,75%_100%,25%_100%,0%_50%)]" />
-            <div className="flex flex-col">
-              <span className="text-sm font-black tracking-widest text-white leading-tight uppercase">
-                AUTOMATED TRADING
-              </span>
-              <span className="text-[9px] tracking-[0.2em] font-bold text-[#00A3FF] uppercase">
-                MERCHANT
-              </span>
-            </div>
-          </Link>
+          <div className="flex items-center gap-3">
+            {isAdmin && (
+              <button 
+                onClick={() => router.push('/admin/dashboard')} 
+                className="text-xs bg-emerald-500 hover:bg-emerald-400 text-black px-4 py-2.5 rounded-xl font-bold transition"
+              >
+                Admin Portal →
+              </button>
+            )}
+            <button 
+              onClick={() => {
+                localStorage.removeItem('access_token');
+                router.push('/login');
+              }} 
+              className="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-4 py-2.5 rounded-xl font-medium transition"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
 
-          <div className="hidden md:flex items-center gap-4 bg-[#030816] border border-slate-800 px-4 py-1.5 rounded-full">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] font-extrabold tracking-widest text-emerald-400 uppercase">
-                LIVE PORTAL
-              </span>
-            </div>
-            <span className="text-slate-700">|</span>
-            <div className="font-mono text-xs font-bold text-slate-300 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-[#00A3FF]" />
-              {currentTime || '15:48:38'}
-            </div>
+        {/* User Details Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
+            <span className="text-[11px] text-zinc-500 font-semibold uppercase">Country</span>
+            <p className="text-sm font-bold text-white mt-1">{userData.country || 'N/A'}</p>
+          </div>
+          <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
+            <span className="text-[11px] text-zinc-500 font-semibold uppercase">Selected Service</span>
+            <p className="text-sm font-bold text-white mt-1">{userData.service || 'N/A'}</p>
+          </div>
+          <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
+            <span className="text-[11px] text-zinc-500 font-semibold uppercase">Account Role</span>
+            <p className="text-sm font-bold text-emerald-400 mt-1">{userData.role}</p>
+          </div>
+          <div className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl">
+            <span className="text-[11px] text-zinc-500 font-semibold uppercase">Joined Date</span>
+            <p className="text-sm font-bold text-white mt-1">
+              {new Date(userData.date_joined).toLocaleDateString()}
+            </p>
+          </div>
+        </div>
+
+        {/* Balance Display */}
+        <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800 p-8 rounded-2xl space-y-2">
+          <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Trading Balance</span>
+          <div className="text-4xl font-extrabold text-emerald-400">
+            ${parseFloat(userData.balance || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          </div>
+        </div>
+
+        {/* Deposit Form & Table Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Deposit Form */}
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4 h-fit">
+            <h2 className="text-base font-bold text-white">Make a Deposit</h2>
+            <form onSubmit={handleDepositSubmit} className="space-y-4">
+              <div>
+                <label className="text-xs text-zinc-400 block mb-1 font-medium">Select Asset</label>
+                <select 
+                  value={coin} 
+                  onChange={(e) => {
+                    setCoin(e.target.value);
+                    setCopied(false);
+                  }}
+                  className="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-600"
+                >
+                  <option value="BTC">Bitcoin (BTC)</option>
+                  <option value="ETH">Ethereum (ETH)</option>
+                  <option value="USDT">Tether (USDT-TRC20)</option>
+                  <option value="SOL">Solana (SOL)</option>
+                </select>
+              </div>
+
+              {/* Copyable Deposit Address Field */}
+              <div>
+                <label className="text-xs text-zinc-400 block mb-1 font-medium">
+                  {coin} Deposit Address
+                </label>
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="text" 
+                    readOnly
+                    value={WALLET_ADDRESSES[coin] || ''}
+                    className="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono text-emerald-400 focus:outline-none select-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleCopyAddress}
+                    className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs px-3 py-2 rounded-xl border border-zinc-700 transition shrink-0 font-medium"
+                  >
+                    {copied ? 'Copied!' : 'Copy'}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-zinc-400 block mb-1 font-medium">Amount ($ USD)</label>
+                <input 
+                  type="number" 
+                  required
+                  min="1"
+                  placeholder="e.g. 500"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-zinc-600"
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={submittingDeposit}
+                className="w-full bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold py-2.5 rounded-xl transition"
+              >
+                {submittingDeposit ? 'Submitting...' : 'Initiate Deposit'}
+              </button>
+
+              {depositMsg && (
+                <p className="text-xs text-zinc-300 mt-2 text-center">{depositMsg}</p>
+              )}
+            </form>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3 bg-[#030816] border border-slate-800/80 p-1.5 pl-3 pr-4 rounded-xl">
-              <div className="w-7 h-7 rounded-lg bg-[#00A3FF] text-white font-black text-xs flex items-center justify-center">
-                {getInitials(user?.name || '')}
+          {/* Deposit Activity Table */}
+          <div className="lg:col-span-2 bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4">
+            <h2 className="text-base font-bold text-white">Deposit History</h2>
+            {userData.deposits?.length === 0 ? (
+              <p className="text-xs text-zinc-500">No deposit records found.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs text-zinc-400">
+                  <thead className="border-b border-zinc-800 text-zinc-500 uppercase text-[10px]">
+                    <tr>
+                      <th className="pb-3">Reference</th>
+                      <th className="pb-3">Coin</th>
+                      <th className="pb-3">Amount</th>
+                      <th className="pb-3">Status</th>
+                      <th className="pb-3">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/60">
+                    {userData.deposits?.map((dep: any) => (
+                      <tr key={dep.id}>
+                        <td className="py-3 font-mono text-zinc-200">{dep.reference}</td>
+                        <td className="py-3 text-white font-medium">{dep.coin}</td>
+                        <td className="py-3 font-bold text-white">${parseFloat(dep.amount).toFixed(2)}</td>
+                        <td className="py-3">
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                            dep.status === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            dep.status === 'PENDING' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                            'bg-red-500/10 text-red-400 border border-red-500/20'
+                          }`}>
+                            {dep.status}
+                          </span>
+                        </td>
+                        <td className="py-3 text-zinc-500">
+                          {new Date(dep.created_at).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              <span className="text-xs font-bold text-slate-200">{user?.name}</span>
-            </div>
-
-            <button
-              onClick={handleSignOut}
-              className="p-2.5 sm:px-4 sm:py-2.5 rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all font-bold text-xs flex items-center gap-2 uppercase tracking-wider"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">SIGN OUT</span>
-            </button>
+            )}
           </div>
 
         </div>
-      </header>
-
-      <div className="max-w-[1500px] mx-auto w-full px-6 py-8 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        <aside className="lg:col-span-3 space-y-6">
-          
-          <div className="bg-gradient-to-b from-[#00A3FF] to-[#0066FF] rounded-3xl p-6 text-white text-center space-y-4 shadow-[0_10px_30px_rgba(0,163,255,0.25)] relative overflow-hidden">
-            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 text-white font-black text-xl flex items-center justify-center mx-auto shadow-inner">
-              {getInitials(user?.name || '')}
-            </div>
-
-            <div>
-              <h2 className="text-lg font-black tracking-wider uppercase">{user?.name}</h2>
-              <span className="inline-block mt-1 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-extrabold tracking-widest uppercase">
-                • {user?.status || 'PENDING'}
-              </span>
-            </div>
-
-            <div className="bg-black/20 backdrop-blur-md border border-white/20 rounded-xl p-2.5 flex items-center justify-between text-xs">
-              <span className="font-mono text-white/90 font-medium">ID: {user?.accountId}</span>
-              <button
-                onClick={handleCopyId}
-                className="p-1 hover:bg-white/20 rounded transition-colors text-white"
-                title="Copy User ID"
-              >
-                {copied ? <Check className="w-4 h-4 text-emerald-300" /> : <Copy className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-[#070F21]/80 backdrop-blur-xl border border-slate-800 p-5 rounded-2xl space-y-2">
-            <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-emerald-400 uppercase">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              MARKET OPEN
-            </div>
-            <div className="text-2xl font-black font-mono text-white">
-              {currentTime || '15:48:38'}
-            </div>
-            <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-              {new Date().toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}
-            </div>
-          </div>
-
-          <div className="bg-[#070F21]/80 backdrop-blur-xl border border-slate-800 p-5 rounded-2xl space-y-4">
-            <span className="text-[10px] font-black tracking-widest text-slate-400 uppercase block border-b border-slate-800 pb-2">
-              ACCOUNT OVERVIEW
-            </span>
-
-            <div className="space-y-3 text-xs">
-              <div className="bg-[#030816] border border-slate-800/60 p-3 rounded-xl flex items-center gap-3">
-                <Layers className="w-4 h-4 text-[#00A3FF]" />
-                <div>
-                  <span className="text-[9px] text-slate-500 uppercase font-semibold block">SERVICE</span>
-                  <span className="font-bold text-white">{user?.service || 'VIP Sign Up'}</span>
-                </div>
-              </div>
-
-              <div className="bg-[#030816] border border-slate-800/60 p-3 rounded-xl flex items-center gap-3">
-                <Calendar className="w-4 h-4 text-[#00A3FF]" />
-                <div>
-                  <span className="text-[9px] text-slate-500 uppercase font-semibold block">MEMBER SINCE</span>
-                  <span className="font-bold text-slate-200">
-                    {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-GB') : '05/08/2026'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="bg-[#030816] border border-slate-800/60 p-3 rounded-xl flex items-center gap-3">
-                <ShieldAlert className="w-4 h-4 text-amber-400" />
-                <div>
-                  <span className="text-[9px] text-slate-500 uppercase font-semibold block">STATUS</span>
-                  <span className="font-bold text-amber-400">{user?.status || 'PENDING'}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-[#070F21]/80 backdrop-blur-xl border border-slate-800 p-5 rounded-2xl space-y-3">
-            <span className="text-[10px] font-black tracking-widest text-slate-400 uppercase block border-b border-slate-800 pb-2">
-              MANAGE FUNDS
-            </span>
-
-            <Link
-              href="/deposit"
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-[#00A3FF] to-[#0075FF] text-white font-extrabold text-xs tracking-wider uppercase shadow-[0_0_20px_rgba(0,163,255,0.3)] hover:shadow-[0_0_30px_rgba(0,163,255,0.5)] transition-all flex items-center justify-center gap-2"
-            >
-              <ArrowDownLeft className="w-4 h-4" /> DEPOSIT
-            </Link>
-
-            <button className="w-full py-3 rounded-xl bg-[#030816] border border-slate-800 text-slate-300 font-extrabold text-xs tracking-wider uppercase hover:border-slate-700 transition-all flex items-center justify-center gap-2">
-              <ArrowUpRight className="w-4 h-4" /> WITHDRAW
-            </button>
-
-          <Link 
-            href="/support" 
-            className="w-full py-2.5 rounded-xl border border-slate-800/80 text-slate-400 hover:text-white hover:border-slate-700 text-[11px] font-bold tracking-wider uppercase transition-all flex items-center justify-center gap-2"
-          >
-            <MessageSquare className="w-3.5 h-3.5 text-[#00A3FF]" /> Contact Support
-          </Link>
-          </div>
-
-        </aside>
-
-        <main className="lg:col-span-9 space-y-6">
-          
-          <div className="grid grid-cols-3 bg-[#070F21]/80 backdrop-blur-xl border border-slate-800 p-1.5 rounded-2xl gap-2">
-            {[
-              { id: 'pool', title: 'POOL TRADING', icon: TrendingUp },
-              { id: 'vip', title: 'VIP SIGN UP', icon: Crown },
-              { id: 'management', title: 'ACCOUNT MANAGEMENT', icon: Users },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`py-3.5 px-4 rounded-xl text-xs font-black tracking-wider uppercase flex items-center justify-center gap-2 transition-all ${
-                    isActive
-                      ? 'bg-gradient-to-r from-[#00A3FF] to-[#0075FF] text-white shadow-[0_0_20px_rgba(0,163,255,0.3)]'
-                      : 'text-slate-400 hover:text-white hover:bg-slate-800/40'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden sm:inline">{tab.title}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="bg-[#070F21]/80 backdrop-blur-xl border border-slate-800 p-6 sm:p-8 rounded-3xl space-y-6 shadow-2xl relative">
-            
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
-              <div className="space-y-1">
-                <span className="text-[10px] font-black tracking-[0.2em] text-[#00A3FF] uppercase block">
-                  TRADING DASHBOARD
-                </span>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-white uppercase tracking-tight">
-                  {activeTab === 'vip' ? 'VIP SIGN UP' : activeTab === 'pool' ? 'POOL TRADING' : 'ACCOUNT MANAGEMENT'}
-                </h1>
-              </div>
-
-              <div className="px-4 py-1.5 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-400 text-xs font-bold tracking-widest uppercase self-start sm:self-auto">
-                {user?.status || 'PENDING APPROVAL'}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-[#00A3FF]" />
-                <h3 className="text-xs font-black text-slate-200 tracking-wider uppercase">
-                  PORTFOLIO STATUS
-                </h3>
-              </div>
-              <p className="text-xs text-slate-400">Latest update from your trading team</p>
-
-              <div className="bg-[#030816] border border-slate-800/80 p-5 rounded-2xl text-xs text-slate-300 font-medium leading-relaxed">
-                Status: <span className="text-amber-400 font-bold uppercase">{user?.status || 'PENDING'}</span> for {activeTab === 'vip' ? 'VIP Sign Up' : activeTab === 'pool' ? 'Pool Trading' : 'Account Management'}. Account allocation in progress.
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-[#030816] border border-slate-800/80 p-5 rounded-2xl space-y-1">
-                <span className="text-[10px] font-black tracking-widest text-slate-500 uppercase block">
-                  START DATE
-                </span>
-                <span className="text-sm font-bold font-mono text-white">
-                  {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-GB') : '05/08/2026'}
-                </span>
-              </div>
-
-              <div className="bg-[#030816] border border-slate-800/80 p-5 rounded-2xl space-y-1">
-                <span className="text-[10px] font-black tracking-widest text-slate-500 uppercase block">
-                  END DATE
-                </span>
-                <span className="text-sm font-bold font-mono text-slate-400">TBD</span>
-              </div>
-            </div>
-
-          </div>
-
-        </main>
 
       </div>
     </div>

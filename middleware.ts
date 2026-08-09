@@ -1,53 +1,29 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { jwtVerify } from 'jose';
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'fallback-secret-change-me'
-);
+export function middleware(request: NextRequest) {
+  const token = request.cookies.get('access_token')?.value;
+  const isStaff = request.cookies.get('is_staff')?.value === 'true';
+  const { pathname } = request.nextUrl;
 
-const PROTECTED_ROUTES = ['/dashboard', '/admin', '/profile'];
-const AUTH_ROUTES = ['/login', '/register'];
-
-export async function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-  const token = req.cookies.get('token')?.value;
-
-  let isValidToken = false;
-  if (token) {
-    try {
-      await jwtVerify(token, JWT_SECRET);
-      isValidToken = true;
-    } catch {
-      isValidToken = false;
-    }
+  // Protect Admin Dashboard
+  if (pathname.startsWith('/admin') && (!token || !isStaff)) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  // Redirect unauthenticated users from protected routes to /login
-  if (PROTECTED_ROUTES.some((route) => pathname.startsWith(route))) {
-    if (!isValidToken) {
-      const loginUrl = new URL('/login', req.url);
-      loginUrl.searchParams.set('from', pathname);
-      return NextResponse.redirect(loginUrl);
-    }
+  // Redirect staff visiting regular dashboard to admin dashboard automatically
+  if (pathname === '/dashboard' && token && isStaff) {
+    return NextResponse.redirect(new URL('/admin/dashboard', request.url));
   }
 
-  // Redirect authenticated users away from login/register to /dashboard
-  if (AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
-    if (isValidToken) {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
-    }
+  // Protect regular user routes
+  if ((pathname.startsWith('/dashboard') || pathname.startsWith('/deposit')) && !token) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    '/dashboard/:path*',
-    '/admin/:path*',
-    '/profile/:path*',
-    '/login',
-    '/register',
-  ],
+  matcher: ['/dashboard/:path*', '/deposit/:path*', '/admin/:path*', '/login', '/register'],
 };

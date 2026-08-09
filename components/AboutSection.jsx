@@ -71,7 +71,7 @@ export default function AboutSection() {
 
             <div className="space-y-4 text-slate-600 text-base sm:text-lg leading-relaxed max-w-4xl pt-2">
               <p>
-                Link Forex Trading Company is a modern trading and investment firm focused on delivering disciplined, data-driven trading solutions across forex, cryptocurrency, and global equity markets.
+                Automated Trading Merchant Platform is a modern trading and investment firm focused on delivering disciplined, data-driven trading solutions across forex, cryptocurrency, and global equity markets.
               </p>
               <p>
                 Our approach emphasizes precision, consistency, transparency, and structured execution.

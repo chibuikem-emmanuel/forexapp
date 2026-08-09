@@ -150,7 +150,7 @@ export default function OurEdgeSection() {
         {/* Block 1 */}
         <FeatureBlock
           badge="OUR EDGE"
-          title="WHY CHOOSE LINK FOREX"
+          title="WHY CHOOSE AUTOMATED TRADING MERCHANT"
           points={blockOnePoints}
           imageSrc="https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&q=80&w=1000"
           imageAlt="Team analyzing trading charts"
