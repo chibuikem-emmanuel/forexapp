@@ -33,14 +33,7 @@ export default function Footer() {
               {/* Social Icons */}
               <div className="flex items-center gap-3 pt-2">
                 <a
-                  href="mailto:support@automatedtradingmerchant.com"
-                  aria-label="Email Us"
-                  className="w-10 h-10 rounded-xl bg-[#091833] border border-slate-700/80 flex items-center justify-center text-slate-300 hover:text-[#00A3FF] hover:border-[#00A3FF]/50 hover:bg-[#00A3FF]/10 transition-all"
-                >
-                  <Mail className="w-4 h-4" />
-                </a>
-                <a
-                  href="https://wa.me/"
+                  href="https://wa.me/message/3RAHVPCRCVDWN1"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="WhatsApp Support"
@@ -49,7 +42,7 @@ export default function Footer() {
                   <MessageSquare className="w-4 h-4" />
                 </a>
                 <a
-                  href="https://t.me/"
+                  href="https://t.me/Team_Supportonline"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Telegram Channel"
