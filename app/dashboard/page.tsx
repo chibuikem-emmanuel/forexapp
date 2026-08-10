@@ -21,8 +21,8 @@ const WALLET_ADDRESSES: Record<string, { name: string; address: string; coingeck
   TRX: { name: 'TRON (TRX)', address: 'T123456789abcdef0123456789abcdef0123456', coingeckoId: 'tron', tvSymbol: 'BINANCE:TRXUSDT' },
 };
 
-// Expanded TradingView Widget Sub-Component with 800px Explicit Height
-function TradingViewWidget({ symbol, height = '800px' }: { symbol: string; height?: string }) {
+// Compact TradingView Widget Component matching original image height (320px)
+function TradingViewWidget({ symbol, height = '320px' }: { symbol: string; height?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -96,7 +96,7 @@ export default function UserDashboardPage() {
   const [submittingWithdraw, setSubmittingWithdraw] = useState(false);
   const [withdrawMsg, setWithdrawMsg] = useState('');
 
-  // Handle ESC key to exit fullscreen
+  // ESC key listener for Fullscreen mode
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setIsChartFullscreen(false);
@@ -414,8 +414,8 @@ export default function UserDashboardPage() {
             </div>
           </div>
 
-          {/* Increased Explicit Chart Height (800px) */}
-          <TradingViewWidget symbol={activeChartSymbol} height="800px" />
+          {/* Restored Original Compact Chart Height (320px) */}
+          <TradingViewWidget symbol={activeChartSymbol} height="320px" />
         </div>
 
         {/* FULLSCREEN CHART OVERLAY MODAL */}
