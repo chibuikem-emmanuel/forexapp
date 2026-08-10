@@ -22,7 +22,7 @@ const WALLET_ADDRESSES: Record<string, { name: string; address: string; coingeck
 };
 
 // TradingView Widget Sub-Component
-function TradingViewWidget({ symbol, height = 'h-[420px]' }: { symbol: string; height?: string }) {
+function TradingViewWidget({ symbol, height = 'h-[620px]' }: { symbol: string; height?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -407,8 +407,8 @@ export default function UserDashboardPage() {
             </div>
           </div>
 
-          {/* Inline Interactive TradingView Chart */}
-          <TradingViewWidget symbol={activeChartSymbol} height="h-[450px]" />
+          {/* Inline Interactive TradingView Chart - Height increased to 620px */}
+          <TradingViewWidget symbol={activeChartSymbol} height="h-[620px]" />
         </div>
 
         {/* FULLSCREEN CHART OVERLAY MODAL */}
