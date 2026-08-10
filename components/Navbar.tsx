@@ -82,7 +82,7 @@ export default function Navbar() {
             </Link>
 
             <Link
-              href="/support"
+              href="https://t.me/Team_Supportonline"
               onClick={closeMenu}
               className="w-full text-center py-3 rounded-xl bg-gradient-to-r from-[#00A3FF] to-[#0075FF] text-white text-xs font-black tracking-wider uppercase shadow-[0_0_20px_rgba(0,163,255,0.3)] transition-all"
             >
