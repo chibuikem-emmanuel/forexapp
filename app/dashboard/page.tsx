@@ -21,8 +21,8 @@ const WALLET_ADDRESSES: Record<string, { name: string; address: string; coingeck
   TRX: { name: 'TRON (TRX)', address: 'T123456789abcdef0123456789abcdef0123456', coingeckoId: 'tron', tvSymbol: 'BINANCE:TRXUSDT' },
 };
 
-// Expanded TradingView Widget Sub-Component with 800px Explicit Height
-function TradingViewWidget({ symbol, height = '800px' }: { symbol: string; height?: string }) {
+// TradingView Widget Sub-Component with Explicit Inline Height
+function TradingViewWidget({ symbol, height = '650px' }: { symbol: string; height?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -59,10 +59,7 @@ function TradingViewWidget({ symbol, height = '800px' }: { symbol: string; heigh
       style={{ height, minHeight: height }} 
       ref={containerRef}
     >
-      <div 
-        className="tradingview-widget-container__widget w-full" 
-        style={{ height: '100%', minHeight: height }}
-      ></div>
+      <div className="tradingview-widget-container__widget h-full w-full"></div>
     </div>
   );
 }
@@ -414,8 +411,8 @@ export default function UserDashboardPage() {
             </div>
           </div>
 
-          {/* Increased Explicit Chart Height (800px) */}
-          <TradingViewWidget symbol={activeChartSymbol} height="800px" />
+          {/* Expanded Inline TradingView Chart (650px explicit height) */}
+          <TradingViewWidget symbol={activeChartSymbol} height="650px" />
         </div>
 
         {/* FULLSCREEN CHART OVERLAY MODAL */}
