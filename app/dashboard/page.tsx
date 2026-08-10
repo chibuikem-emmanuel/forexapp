@@ -21,8 +21,8 @@ const WALLET_ADDRESSES: Record<string, { name: string; address: string; coingeck
   TRX: { name: 'TRON (TRX)', address: 'T123456789abcdef0123456789abcdef0123456', coingeckoId: 'tron', tvSymbol: 'BINANCE:TRXUSDT' },
 };
 
-// TradingView Widget Sub-Component
-function TradingViewWidget({ symbol, height = 'h-[620px]' }: { symbol: string; height?: string }) {
+// Expanded TradingView Widget Sub-Component with 800px Explicit Height
+function TradingViewWidget({ symbol, height = '800px' }: { symbol: string; height?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,8 +54,15 @@ function TradingViewWidget({ symbol, height = 'h-[620px]' }: { symbol: string; h
   }, [symbol]);
 
   return (
-    <div className={`tradingview-widget-container ${height} w-full rounded-xl overflow-hidden border border-zinc-800`} ref={containerRef}>
-      <div className="tradingview-widget-container__widget h-full w-full"></div>
+    <div 
+      className="tradingview-widget-container w-full rounded-xl overflow-hidden border border-zinc-800" 
+      style={{ height, minHeight: height }} 
+      ref={containerRef}
+    >
+      <div 
+        className="tradingview-widget-container__widget w-full" 
+        style={{ height: '100%', minHeight: height }}
+      ></div>
     </div>
   );
 }
@@ -407,8 +414,8 @@ export default function UserDashboardPage() {
             </div>
           </div>
 
-          {/* Inline Interactive TradingView Chart - Height increased to 620px */}
-          <TradingViewWidget symbol={activeChartSymbol} height="h-[620px]" />
+          {/* Increased Explicit Chart Height (800px) */}
+          <TradingViewWidget symbol={activeChartSymbol} height="800px" />
         </div>
 
         {/* FULLSCREEN CHART OVERLAY MODAL */}
@@ -447,7 +454,7 @@ export default function UserDashboardPage() {
             </div>
 
             <div className="flex-1 w-full">
-              <TradingViewWidget symbol={activeChartSymbol} height="h-[calc(100vh-120px)]" />
+              <TradingViewWidget symbol={activeChartSymbol} height="calc(100vh - 120px)" />
             </div>
           </div>
         )}
