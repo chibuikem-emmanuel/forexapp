@@ -7,17 +7,11 @@ import { useRouter } from 'next/navigation';
 const WALLET_ADDRESSES: Record<string, { name: string; address: string; coingeckoId: string; tvSymbol: string }> = {
   BTC: { name: 'Bitcoin (BTC)', address: 'bc1qt752vwmmam0aw27yxvfmeufn8h3kppdvv5aty5', coingeckoId: 'bitcoin', tvSymbol: 'BINANCE:BTCUSDT' },
   ETH: { name: 'Ethereum (ETH)', address: '0x5207aDdAcE2bBeE8763F07c1F3e954685167C07C', coingeckoId: 'ethereum', tvSymbol: 'BINANCE:ETHUSDT' },
-  XAUUSD: { name: 'Gold / USD (XAUUSD)', address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F', coingeckoId: 'pax-gold', tvSymbol: 'OANDA:XAUUSD' },
   USDT_TRC20: { name: 'Tether (USDT-TRC20)', address: 'TNqPonKL1ehBwnNeBTZ6GUuWDdfjNvs3L9', coingeckoId: 'tether', tvSymbol: 'CRYPTOCAP:USDT' },
   USDT_ERC20: { name: 'Tether (USDT-ERC20)', address: '0x5207aDdAcE2bBeE8763F07c1F3e954685167C07C', coingeckoId: 'tether', tvSymbol: 'CRYPTOCAP:USDT' },
   SOL: { name: 'Solana (SOL)', address: 'Hm2WqrTw7NRw8UUAhBnbDBwc6HkpiV2D3naBoSNVncaS', coingeckoId: 'solana', tvSymbol: 'BINANCE:SOLUSDT' },
-  BNB: { name: 'Binance Coin (BNB)', address: 'bnb1gr2w8v4j72d3286423456789abcdef0123456', coingeckoId: 'binancecoin', tvSymbol: 'BINANCE:BNBUSDT' },
-  XRP: { name: 'Ripple (XRP)', address: 'rEb8TK3gG22uuA5223456789abcdef0123456', coingeckoId: 'ripple', tvSymbol: 'BINANCE:XRPUSDT' },
-  ADA: { name: 'Cardano (ADA)', address: 'addr1q9x2y3z4a5b6c7d8e9f0123456789abcdef0123456', coingeckoId: 'cardano', tvSymbol: 'BINANCE:ADAUSDT' },
-  AVAX: { name: 'Avalanche (AVAX)', address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F', coingeckoId: 'avalanche-2', tvSymbol: 'BINANCE:AVAXUSDT' },
-  LINK: { name: 'Chainlink (LINK)', address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F', coingeckoId: 'chainlink', tvSymbol: 'BINANCE:LINKUSDT' },
-  DOGE: { name: 'Dogecoin (DOGE)', address: 'DH5yaieqoZN36fDVciNyRueRGvGLR3mr7L', coingeckoId: 'dogecoin', tvSymbol: 'BINANCE:DOGEUSDT' },
-  LTC: { name: 'Litecoin (LTC)', address: 'LTC123456789abcdef0123456789abcdef0123456', coingeckoId: 'litecoin', tvSymbol: 'BINANCE:LTCUSDT' },
+  BNB: { name: 'Binance Coin (BNB)', address: '0x5207aDdAcE2bBeE8763F07c1F3e954685167C07C', coingeckoId: 'binancecoin', tvSymbol: 'BINANCE:BNBUSDT' },
+  LTC: { name: 'Litecoin (LTC)', address: 'ltc1qaxpu37wkgg2mrh2ezuk0nn4gatcrtsd7uc7ev6', coingeckoId: 'litecoin', tvSymbol: 'BINANCE:LTCUSDT' },
   TRX: { name: 'TRON (TRX)', address: 'TNqPonKL1ehBwnNeBTZ6GUuWDdfjNvs3L9', coingeckoId: 'tron', tvSymbol: 'BINANCE:TRXUSDT' },
 };
 
