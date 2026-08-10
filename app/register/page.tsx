@@ -10,7 +10,6 @@ const INVESTMENT_PLANS = [
     category: '2-Days Plan',
     duration: '2 Days',
     options: [
-      { invest: '$300', earn: '$4,200', id: '2D_300' },
       { invest: '$500', earn: '$6,200', id: '2D_500' },
       { invest: '$700', earn: '$7,300', id: '2D_700' },
       { invest: '$800', earn: '$8,000', id: '2D_800' },
@@ -39,7 +38,11 @@ const INVESTMENT_PLANS = [
   },
 ];
 
-const PAYMENT_METHODS = ['Bitcoin 💰', 'USDT 💎', 'Skrill 💰'];
+const PAYMENT_METHODS = [
+  'Bitcoin 💰',
+  'USDT 💎',
+  'Other Cryptocurrency Address',
+];
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -48,23 +51,30 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
 
   const [formData, setFormData] = useState({
-    selectedPlan: '2D_300',
-    planDetails: 'INVEST $300 EARN $4,200 (2 Days)',
+    selectedPlan: '2D_500',
+    planDetails: 'INVEST $500 EARN $6,200 (2 Days)',
     fullName: '',
     email: '',
     phone: '',
     telegram: '',
     country: '',
-    btcWallet: '',
+    cryptoWallet: '',
     paymentMethod: 'Bitcoin 💰',
     password: '',
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handlePlanSelect = (id: string, invest: string, earn: string, duration: string) => {
+  const handlePlanSelect = (
+    id: string,
+    invest: string,
+    earn: string,
+    duration: string
+  ) => {
     setFormData({
       ...formData,
       selectedPlan: id,
@@ -87,7 +97,7 @@ export default function RegisterPage() {
           telegram_username: formData.telegram,
           country: formData.country,
           service: formData.planDetails,
-          btc_wallet_address: formData.btcWallet,
+          btc_wallet_address: formData.cryptoWallet,
           payment_method: formData.paymentMethod,
           password: formData.password,
         }),
@@ -104,7 +114,9 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-xl bg-zinc-900 border border-zinc-800 rounded-xl p-6 sm:p-8 shadow-2xl space-y-6">
-        <h1 className="text-2xl font-bold text-center text-emerald-400">Create Investor Account</h1>
+        <h1 className="text-2xl font-bold text-center text-emerald-400">
+          Create Investor Account
+        </h1>
 
         {error && (
           <div className="bg-red-500/10 border border-red-500 text-red-500 p-3 rounded text-sm text-center">
@@ -114,15 +126,23 @@ export default function RegisterPage() {
 
         {/* Step Indicator */}
         <div className="flex items-center justify-between border-b border-zinc-800 pb-4 text-xs text-zinc-400">
-          <span className={step >= 1 ? 'text-emerald-400 font-bold' : ''}>1. Select Plan</span>
-          <span className={step >= 2 ? 'text-emerald-400 font-bold' : ''}>2. Details & Payout</span>
-          <span className={step === 3 ? 'text-emerald-400 font-bold' : ''}>3. Confirm</span>
+          <span className={step >= 1 ? 'text-emerald-400 font-bold' : ''}>
+            1. Select Plan
+          </span>
+          <span className={step >= 2 ? 'text-emerald-400 font-bold' : ''}>
+            2. Details & Payout
+          </span>
+          <span className={step === 3 ? 'text-emerald-400 font-bold' : ''}>
+            3. Confirm
+          </span>
         </div>
 
         {/* STEP 1: INVESTMENT PLAN SELECTION */}
         {step === 1 && (
           <div className="space-y-5">
-            <h2 className="text-base font-semibold text-zinc-200">Step 1: Choose Trading Plan</h2>
+            <h2 className="text-base font-semibold text-zinc-200">
+              Step 1: Choose Trading Plan
+            </h2>
 
             <div className="space-y-4 max-h-[380px] overflow-y-auto pr-1 custom-scrollbar">
               {INVESTMENT_PLANS.map((group) => (
@@ -136,7 +156,14 @@ export default function RegisterPage() {
                       return (
                         <div
                           key={opt.id}
-                          onClick={() => handlePlanSelect(opt.id, opt.invest, opt.earn, group.duration)}
+                          onClick={() =>
+                            handlePlanSelect(
+                              opt.id,
+                              opt.invest,
+                              opt.earn,
+                              group.duration
+                            )
+                          }
                           className={`p-3.5 rounded-lg border cursor-pointer transition flex justify-between items-center ${
                             isSelected
                               ? 'border-emerald-500 bg-emerald-500/10 text-white'
@@ -144,8 +171,12 @@ export default function RegisterPage() {
                           }`}
                         >
                           <div>
-                            <div className="text-sm font-extrabold text-white">Invest {opt.invest}</div>
-                            <div className="text-xs text-emerald-400 font-semibold">Earn {opt.earn}</div>
+                            <div className="text-sm font-extrabold text-white">
+                              Invest {opt.invest}
+                            </div>
+                            <div className="text-xs text-emerald-400 font-semibold">
+                              Earn {opt.earn}
+                            </div>
                           </div>
                           <span className="text-[10px] bg-zinc-800 text-zinc-300 px-2 py-0.5 rounded-full font-mono">
                             {group.duration}
@@ -171,7 +202,9 @@ export default function RegisterPage() {
         {/* STEP 2: PERSONAL & PAYOUT DETAILS */}
         {step === 2 && (
           <div className="space-y-4">
-            <h2 className="text-base font-semibold text-zinc-200">Step 2: Investor & Payout Details</h2>
+            <h2 className="text-base font-semibold text-zinc-200">
+              Step 2: Investor & Payout Details
+            </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <input
@@ -222,7 +255,9 @@ export default function RegisterPage() {
             />
 
             <div>
-              <label className="text-xs text-zinc-400 mb-1 block">Preferred Deposit Payment Method *</label>
+              <label className="text-xs text-zinc-400 mb-1 block">
+                Preferred Deposit Payment Method *
+              </label>
               <select
                 name="paymentMethod"
                 value={formData.paymentMethod}
@@ -239,9 +274,9 @@ export default function RegisterPage() {
 
             <input
               type="text"
-              name="btcWallet"
-              placeholder="BTC Wallet Address (For Receiving Returns) *"
-              value={formData.btcWallet}
+              name="cryptoWallet"
+              placeholder="BTC / Crypto Wallet Address (For Receiving Returns) *"
+              value={formData.cryptoWallet}
               onChange={handleChange}
               className="w-full bg-zinc-950 border border-zinc-800 p-3 rounded text-sm font-mono text-emerald-400 focus:outline-none focus:border-emerald-500"
               required
@@ -279,24 +314,49 @@ export default function RegisterPage() {
         {/* STEP 3: CONFIRM & SUBMIT */}
         {step === 3 && (
           <form onSubmit={handleRegister} className="space-y-4">
-            <h2 className="text-base font-semibold text-zinc-200">Step 3: Confirm Registration</h2>
+            <h2 className="text-base font-semibold text-zinc-200">
+              Step 3: Confirm Registration
+            </h2>
 
             <div className="bg-zinc-950 border border-zinc-800 p-4 rounded-lg text-xs space-y-2.5 text-zinc-300">
               <p>
                 <span className="text-zinc-500 block">Chosen Plan:</span>
-                <strong className="text-emerald-400 text-sm">{formData.planDetails}</strong>
+                <strong className="text-emerald-400 text-sm">
+                  {formData.planDetails}
+                </strong>
               </p>
               <div className="grid grid-cols-2 gap-2 border-t border-zinc-800/80 pt-2">
-                <p><span className="text-zinc-500">Full Name:</span> {formData.fullName}</p>
-                <p><span className="text-zinc-500">Email:</span> {formData.email}</p>
-                <p><span className="text-zinc-500">Contact Number:</span> {formData.phone}</p>
-                <p><span className="text-zinc-500">Nationality:</span> {formData.country}</p>
-                <p><span className="text-zinc-500">Payment Method:</span> {formData.paymentMethod}</p>
-                <p><span className="text-zinc-500">Telegram:</span> {formData.telegram || 'N/A'}</p>
+                <p>
+                  <span className="text-zinc-500">Full Name:</span>{' '}
+                  {formData.fullName}
+                </p>
+                <p>
+                  <span className="text-zinc-500">Email:</span> {formData.email}
+                </p>
+                <p>
+                  <span className="text-zinc-500">Contact Number:</span>{' '}
+                  {formData.phone}
+                </p>
+                <p>
+                  <span className="text-zinc-500">Nationality:</span>{' '}
+                  {formData.country}
+                </p>
+                <p>
+                  <span className="text-zinc-500">Payment Method:</span>{' '}
+                  {formData.paymentMethod}
+                </p>
+                <p>
+                  <span className="text-zinc-500">Telegram:</span>{' '}
+                  {formData.telegram || 'N/A'}
+                </p>
               </div>
               <p className="border-t border-zinc-800/80 pt-2 font-mono">
-                <span className="text-zinc-500 block font-sans">Payout BTC Wallet Address:</span>
-                <span className="text-emerald-400 break-all">{formData.btcWallet}</span>
+                <span className="text-zinc-500 block font-sans">
+                  Payout Wallet Address:
+                </span>
+                <span className="text-emerald-400 break-all">
+                  {formData.cryptoWallet}
+                </span>
               </p>
             </div>
 
