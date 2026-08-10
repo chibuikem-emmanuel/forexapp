@@ -44,7 +44,7 @@ export default function Navbar() {
             Sign In
           </Link>
           <Link
-            href="/support"
+            href="https://t.me/Team_Supportonline"
             className="text-xs font-semibold tracking-wider text-white px-5 py-2.5 rounded-lg border border-slate-700 bg-slate-900/60 hover:bg-slate-800 hover:border-[#00A3FF]/50 transition-all uppercase"
           >
             Contact Support
@@ -82,7 +82,7 @@ export default function Navbar() {
             </Link>
 
             <Link
-              href="https://t.me/Team_Supportonline"
+              href="/support"
               onClick={closeMenu}
               className="w-full text-center py-3 rounded-xl bg-gradient-to-r from-[#00A3FF] to-[#0075FF] text-white text-xs font-black tracking-wider uppercase shadow-[0_0_20px_rgba(0,163,255,0.3)] transition-all"
             >
