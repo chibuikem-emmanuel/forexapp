@@ -7,19 +7,22 @@ import { useRouter } from 'next/navigation';
 const WALLET_ADDRESSES: Record<string, { name: string; address: string; coingeckoId: string; tvSymbol: string }> = {
   BTC: { name: 'Bitcoin (BTC)', address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', coingeckoId: 'bitcoin', tvSymbol: 'BINANCE:BTCUSDT' },
   ETH: { name: 'Ethereum (ETH)', address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F', coingeckoId: 'ethereum', tvSymbol: 'BINANCE:ETHUSDT' },
+  XAUUSD: { name: 'Gold / USD (XAUUSD)', address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F', coingeckoId: 'pax-gold', tvSymbol: 'OANDA:XAUUSD' },
   USDT_TRC20: { name: 'Tether (USDT-TRC20)', address: 'TYD2pE4B56gN7f8A1b2c3d4e5f6g7h8i9j', coingeckoId: 'tether', tvSymbol: 'CRYPTOCAP:USDT' },
   USDT_ERC20: { name: 'Tether (USDT-ERC20)', address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F', coingeckoId: 'tether', tvSymbol: 'CRYPTOCAP:USDT' },
   SOL: { name: 'Solana (SOL)', address: '7v9W8mP4zK2qL1rS5tU8vW3xY6zA9bC2dE5fG8hJ1kM', coingeckoId: 'solana', tvSymbol: 'BINANCE:SOLUSDT' },
   BNB: { name: 'Binance Coin (BNB)', address: 'bnb1gr2w8v4j72d3286423456789abcdef0123456', coingeckoId: 'binancecoin', tvSymbol: 'BINANCE:BNBUSDT' },
   XRP: { name: 'Ripple (XRP)', address: 'rEb8TK3gG22uuA5223456789abcdef0123456', coingeckoId: 'ripple', tvSymbol: 'BINANCE:XRPUSDT' },
   ADA: { name: 'Cardano (ADA)', address: 'addr1q9x2y3z4a5b6c7d8e9f0123456789abcdef0123456', coingeckoId: 'cardano', tvSymbol: 'BINANCE:ADAUSDT' },
+  AVAX: { name: 'Avalanche (AVAX)', address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F', coingeckoId: 'avalanche-2', tvSymbol: 'BINANCE:AVAXUSDT' },
+  LINK: { name: 'Chainlink (LINK)', address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F', coingeckoId: 'chainlink', tvSymbol: 'BINANCE:LINKUSDT' },
   DOGE: { name: 'Dogecoin (DOGE)', address: 'DH5yaieqoZN36fDVciNyRueRGvGLR3mr7L', coingeckoId: 'dogecoin', tvSymbol: 'BINANCE:DOGEUSDT' },
   LTC: { name: 'Litecoin (LTC)', address: 'LTC123456789abcdef0123456789abcdef0123456', coingeckoId: 'litecoin', tvSymbol: 'BINANCE:LTCUSDT' },
   TRX: { name: 'TRON (TRX)', address: 'T123456789abcdef0123456789abcdef0123456', coingeckoId: 'tron', tvSymbol: 'BINANCE:TRXUSDT' },
 };
 
 // TradingView Widget Sub-Component
-function TradingViewWidget({ symbol }: { symbol: string }) {
+function TradingViewWidget({ symbol, height = 'h-[420px]' }: { symbol: string; height?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -51,7 +54,7 @@ function TradingViewWidget({ symbol }: { symbol: string }) {
   }, [symbol]);
 
   return (
-    <div className="tradingview-widget-container h-[420px] w-full rounded-xl overflow-hidden border border-zinc-800" ref={containerRef}>
+    <div className={`tradingview-widget-container ${height} w-full rounded-xl overflow-hidden border border-zinc-800`} ref={containerRef}>
       <div className="tradingview-widget-container__widget h-full w-full"></div>
     </div>
   );
@@ -67,6 +70,7 @@ export default function UserDashboardPage() {
   const [cryptoPrices, setCryptoPrices] = useState<Record<string, number>>({});
   const [pricesLoading, setPricesLoading] = useState(true);
   const [selectedChartCoin, setSelectedChartCoin] = useState<string>('BTC');
+  const [isChartFullscreen, setIsChartFullscreen] = useState<boolean>(false);
 
   // Active Action Tab (Deposit or Withdraw)
   const [activeAction, setActiveAction] = useState<'deposit' | 'withdraw'>('deposit');
@@ -84,6 +88,15 @@ export default function UserDashboardPage() {
   const [withdrawAddress, setWithdrawAddress] = useState('');
   const [submittingWithdraw, setSubmittingWithdraw] = useState(false);
   const [withdrawMsg, setWithdrawMsg] = useState('');
+
+  // Handle ESC key to exit fullscreen
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsChartFullscreen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Fetch Dashboard Profile Data
   async function fetchDashboard() {
@@ -114,7 +127,7 @@ export default function UserDashboardPage() {
   // Fetch Live Prices
   async function fetchLivePrices() {
     try {
-      const ids = Object.values(WALLET_ADDRESSES).map((c) => c.coingeckoId).join(',');
+      const ids = Array.from(new Set(Object.values(WALLET_ADDRESSES).map((c) => c.coingeckoId))).join(',');
       const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
       if (res.ok) {
         const data = await res.json();
@@ -322,13 +335,13 @@ export default function UserDashboardPage() {
               <p className="text-xs text-zinc-500 font-mono">Fetching rates...</p>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {['BTC', 'ETH', 'SOL', 'USDT_TRC20'].map((symbol) => {
+                {['BTC', 'ETH', 'XAUUSD', 'SOL'].map((symbol) => {
                   const unitPrice = cryptoPrices[symbol] || 1;
                   const equivCoins = balanceUSD > 0 ? (balanceUSD / unitPrice) : 0;
                   return (
                     <div 
                       key={symbol} 
-                      onClick={() => setSelectedChartCoin(symbol === 'USDT_TRC20' ? 'BTC' : symbol)}
+                      onClick={() => setSelectedChartCoin(symbol)}
                       className={`p-3 rounded-xl border transition cursor-pointer ${
                         selectedChartCoin === symbol 
                           ? 'bg-emerald-500/10 border-emerald-500/40' 
@@ -336,7 +349,7 @@ export default function UserDashboardPage() {
                       }`}
                     >
                       <span className="text-[10px] text-zinc-400 font-bold block">
-                        {symbol.replace('_TRC20', '')}
+                        {symbol === 'XAUUSD' ? 'GOLD (XAUUSD)' : symbol.replace('_TRC20', '')}
                       </span>
                       <p className="text-sm font-mono font-bold text-emerald-400">
                         {equivCoins < 0.0001 ? equivCoins.toFixed(6) : equivCoins.toFixed(4)}
@@ -355,33 +368,89 @@ export default function UserDashboardPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h2 className="text-base font-bold text-white flex items-center gap-2">
-                Live Market Trend & Deposit Chart
+                Live Market Trend & Chart
               </h2>
               <p className="text-xs text-zinc-400">
-                Track real-time candlesticks and technical movement for your chosen deposit asset
+                Track real-time candlesticks and technical movement for your chosen asset
               </p>
             </div>
 
-            {/* Chart Asset Selector */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-400 font-medium">View Chart:</span>
-              <select
-                value={selectedChartCoin}
-                onChange={(e) => setSelectedChartCoin(e.target.value)}
-                className="bg-black border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-emerald-400 font-bold focus:outline-none"
+            {/* Chart Options & Fullscreen Trigger */}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-zinc-400 font-medium">Asset:</span>
+                <select
+                  value={selectedChartCoin}
+                  onChange={(e) => setSelectedChartCoin(e.target.value)}
+                  className="bg-black border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-emerald-400 font-bold focus:outline-none"
+                >
+                  {Object.entries(WALLET_ADDRESSES).map(([key, item]) => (
+                    <option key={key} value={key}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Fullscreen Toggle Button */}
+              <button
+                type="button"
+                onClick={() => setIsChartFullscreen(true)}
+                className="bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200 border border-zinc-700 px-3 py-1.5 rounded-xl transition flex items-center gap-1.5"
+                title="Expand chart to fullscreen"
               >
-                {Object.entries(WALLET_ADDRESSES).map(([key, item]) => (
-                  <option key={key} value={key}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
+                <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4" />
+                </svg>
+                Fullscreen
+              </button>
             </div>
           </div>
 
-          {/* Interactive TradingView Chart */}
-          <TradingViewWidget symbol={activeChartSymbol} />
+          {/* Inline Interactive TradingView Chart */}
+          <TradingViewWidget symbol={activeChartSymbol} height="h-[450px]" />
         </div>
+
+        {/* FULLSCREEN CHART OVERLAY MODAL */}
+        {isChartFullscreen && (
+          <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md p-4 sm:p-6 flex flex-col justify-between space-y-4">
+            <div className="flex justify-between items-center bg-zinc-900 border border-zinc-800 px-4 py-3 rounded-xl">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-bold text-white">
+                  {WALLET_ADDRESSES[selectedChartCoin]?.name || selectedChartCoin} — Fullscreen Interactive Chart
+                </span>
+                <span className="text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                  {activeChartSymbol}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <select
+                  value={selectedChartCoin}
+                  onChange={(e) => setSelectedChartCoin(e.target.value)}
+                  className="bg-black border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-emerald-400 font-bold focus:outline-none"
+                >
+                  {Object.entries(WALLET_ADDRESSES).map(([key, item]) => (
+                    <option key={key} value={key}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  onClick={() => setIsChartFullscreen(false)}
+                  className="bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs px-3.5 py-1.5 rounded-xl border border-red-500/30 font-bold transition"
+                >
+                  Close (ESC) ✕
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 w-full">
+              <TradingViewWidget symbol={activeChartSymbol} height="h-[calc(100vh-120px)]" />
+            </div>
+          </div>
+        )}
 
         {/* Deposit / Withdraw Forms & Activity Tables */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -498,7 +567,7 @@ export default function UserDashboardPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs text-zinc-400 block mb-1 font-medium">Your Destination Address</label>
+                  <label className="text-xs text-zinc-400 block mb-1 font-medium font-mono">Your Destination Address</label>
                   <input 
                     type="text" 
                     required
